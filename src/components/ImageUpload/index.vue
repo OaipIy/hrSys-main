@@ -1,8 +1,5 @@
 <template>
   <div>
-    <!-- 给action一个#号 就不会报错了 -->
-    <!-- file-list是上传的文件列表 可以绑定到上传组件上，让上传组件来显示 -->
-    <!-- upload组件显示的是file-list -->
     <el-upload
       list-type="picture-card"
       :limit="1"
@@ -29,8 +26,8 @@
 import COS from 'cos-js-sdk-v5' // 引入腾讯云cos包
 // 实例化COS对象
 const cos = new COS({
-  SecretId: 'AKIDNZU9gxxkGVTAajbCWYJn0wbz6wVnnWy9', // 身份识别 ID
-  SecretKey: 'uYw3tYx5wVnoY1D8mvqEPKzPaVAakdGd' // 身份密钥
+  SecretId: '', 
+  SecretKey: '' 
 })
 export default {
   data() {
@@ -71,9 +68,6 @@ export default {
     //   console.log(file)
       // 如果当前fileList中没有该文件的话 就往里进行追加
       this.fileList = fileList.map(item => item)
-      // 这里为何暂时不成功呢  ？ 因为现在还没有上传 所有第二次进来的数据 一定是个空的
-    // 如果完成上传动作了 第一次进入 和第二次进去的fileList的长度应该都是1 应该都有数据
-    // 上传成功 =》 数据才能进来 =》腾讯云cos
     },
     beforeUpload(file) {
       //   先检查文件类型
@@ -116,17 +110,11 @@ export default {
         //   console.log(err || data)
           // data中有一个statusCode === 200 的时候说明上传成功
           if (!err && data.statusCode === 200) {
-            //   此时说明文件上传成功  要获取成功的返回地址
-            // fileList才能显示到上传组件上 此时我们要将fileList中的数据的url地址变成 现在上传成功的地址
-            // 目前虽然是一张图片 但是请注意 我们的fileList是一个数组
-            // 需要知道当前上传成功的是哪一张图片
             this.fileList = this.fileList.map(item => {
               // 去找谁的uid等于刚刚记录下来的id
               if (item.uid === this.currentFileUid) {
                 // 将成功的地址赋值给原来的url属性
                 return { url: 'http://' + data.Location, upload: true }
-                // upload 为true 表示这张图片已经上传完毕 这个属性要为我们后期应用的时候做标记
-                // 保存  => 图片有大有小 => 上传速度有快又慢 =>要根据有没有upload这个标记来决定是否去保存
               }
               return item
             })
@@ -136,7 +124,6 @@ export default {
               this.showPercent = false
               this.percent = 0
             }, 1000)
-            // 将上传成功的地址 回写到了fileList中 fileList变化  =》 upload组件 就会根据fileList的变化而去渲染视图
           }
         })
       }
